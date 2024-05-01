@@ -10,10 +10,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4 # Checks-out your repository under $GITHUB_WORKSPACE
 
-    - name: Set up Node.js
+    - name: Set up Go
       uses: actions/setup-go@v5
       with:
         go-version: '1.22.x' # Specify the Node.js version
+
+    - name: Install dependencies
+      working-directory: ./simple-click-chromedp
+      run: |
+        go get .
+        go get -u github.com/chromedp/chromedp
+
+    - name: Run Botcheck
+      working-directory: ./simple-click-chromedp
+      run: go run main.go
 
 
 
