@@ -15,6 +15,12 @@ jobs:
       with:
         go-version: '1.22.x' # Specify the Node.js version
 
+    - name: Install dependencies
+      working-directory: ./simple-click-chromedp
+      run: |
+        go get .
+        go get -u github.com/chromedp/chromedp
+
     - uses: actions/cache@v3
       with:
         path: |
@@ -24,11 +30,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
 
-    - name: Install dependencies
-      working-directory: ./simple-click-chromedp
-      run: |
-        go get .
-        go get -u github.com/chromedp/chromedp
 
     - name: Run Botcheck
       working-directory: ./simple-click-chromedp
