@@ -23,7 +23,7 @@ jobs:
 
     - name: Run Botcheck
       working-directory: ./simple-click-chromedp
-      run: go run main.go
+      run: go run someclick.go
 
 
 
