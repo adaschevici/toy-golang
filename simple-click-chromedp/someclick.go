@@ -7,7 +7,6 @@ import (
 
 	"github.com/chromedp/chromedp"
 	"github.com/chromedp/chromedp/kb"
-	// "github.com/go-rod/stealth"
 )
 
 func main() {
@@ -15,6 +14,11 @@ func main() {
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", false),
 		chromedp.DisableGPU,
+		chromedp.Flag("enable-automation", false),
+		chromedp.Flag("disable-gpu", false),
+		chromedp.Flag("enable-webgl", true),
+		chromedp.Flag("disable-software-rasterizer", false),
+		chromedp.Flag("disable-blink-features", "AutomationControlled"),
 	)
 
 	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
@@ -24,7 +28,6 @@ func main() {
 	// also set up a custom logger
 	taskCtx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
 	defer cancel()
-	// chromedp.Evaluate(stealth.JS, nil)
 
 	err := chromedp.Run(taskCtx,
 		chromedp.Navigate(`https://en.wikipedia.org/wiki/Main_Page`),
