@@ -1,38 +1,47 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"log"
-	"time"
+	"os"
+	"path/filepath"
 
 	"github.com/chromedp/chromedp"
 )
 
 func main() {
-	// create chrome instance
-	ctx, cancel := chromedp.NewContext(
-		context.Background(),
-		// chromedp.WithDebugf(log.Printf),
-	)
-	defer cancel()
-
-	// create a timeout
-	ctx, cancel = context.WithTimeout(ctx, 15*time.Second)
-	defer cancel()
-
-	// navigate to a page, wait for an element, click
-	var example string
-	err := chromedp.Run(ctx,
-		chromedp.Navigate(`https://pkg.go.dev/time`),
-		// wait for footer element is visible (ie, page is loaded)
-		chromedp.WaitVisible(`body > footer`),
-		// find and click "Example" link
-		chromedp.Click(`#example-After`, chromedp.NodeVisible),
-		// retrieve the text of the textarea
-		chromedp.Value(`#example-After textarea`, &example),
-	)
+	dir, err := os.MkdirTemp("", "chromedp-example")
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Go's time.After example:\n%s", example)
+	defer os.RemoveAll(dir)
+
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("headless", false),
+		chromedp.DisableGPU,
+		chromedp.UserDataDir(dir),
+	)
+
+	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer cancel()
+
+	// also set up a custom logger
+	taskCtx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
+	defer cancel()
+
+	// ensure that the browser process is started
+	if err := chromedp.Run(taskCtx); err != nil {
+		log.Fatal(err)
+	}
+
+	path := filepath.Join(dir, "DevToolsActivePort")
+	bs, err := os.ReadFile(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	lines := bytes.Split(bs, []byte("\n"))
+	fmt.Printf("DevToolsActivePort has %d lines\n", len(lines))
+
 }
