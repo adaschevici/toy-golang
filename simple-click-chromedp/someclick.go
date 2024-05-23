@@ -1,47 +1,40 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"fmt"
 	"log"
-	"os"
-	"path/filepath"
+	"time"
 
 	"github.com/chromedp/chromedp"
+	"github.com/chromedp/chromedp/kb"
 )
 
 func main() {
-	dir, err := os.MkdirTemp("", "chromedp-example")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
 
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", false),
 		chromedp.DisableGPU,
-		chromedp.UserDataDir(dir),
 	)
 
 	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	// chromedp.Evaluate
 	defer cancel()
 
 	// also set up a custom logger
 	taskCtx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
 	defer cancel()
 
-	// ensure that the browser process is started
-	if err := chromedp.Run(taskCtx); err != nil {
-		log.Fatal(err)
-	}
+	err := chromedp.Run(taskCtx,
+		chromedp.Navigate(`https://en.wikipedia.org/wiki/Main_Page`),
+		chromedp.WaitVisible(`.cdx-text-input__input`, chromedp.ByQuery),
+		chromedp.SendKeys(`.cdx-text-input__input`, "golang", chromedp.ByQuery),
 
-	path := filepath.Join(dir, "DevToolsActivePort")
-	bs, err := os.ReadFile(path)
+		chromedp.SendKeys(`.cdx-text-input__input`, kb.Enter, chromedp.ByQuery),
+	)
+	time.Sleep(2 * time.Second)
+	// ensure that the browser process is started
 	if err != nil {
 		log.Fatal(err)
 	}
-	lines := bytes.Split(bs, []byte("\n"))
-	fmt.Printf("DevToolsActivePort has %d lines\n", len(lines))
 
 }
