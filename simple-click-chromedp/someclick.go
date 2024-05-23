@@ -7,6 +7,7 @@ import (
 
 	"github.com/chromedp/chromedp"
 	"github.com/chromedp/chromedp/kb"
+	// "github.com/go-rod/stealth"
 )
 
 func main() {
@@ -23,6 +24,7 @@ func main() {
 	// also set up a custom logger
 	taskCtx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
 	defer cancel()
+	// chromedp.Evaluate(stealth.JS, nil)
 
 	err := chromedp.Run(taskCtx,
 		chromedp.Navigate(`https://en.wikipedia.org/wiki/Main_Page`),
@@ -32,6 +34,10 @@ func main() {
 		chromedp.SendKeys(`.cdx-text-input__input`, kb.Enter, chromedp.ByQuery),
 	)
 	time.Sleep(2 * time.Second)
+	err = chromedp.Run(taskCtx,
+		chromedp.Navigate(`https://bot.sannysoft.com/`),
+	)
+	time.Sleep(20 * time.Second)
 	// ensure that the browser process is started
 	if err != nil {
 		log.Fatal(err)
