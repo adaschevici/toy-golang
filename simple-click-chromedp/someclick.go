@@ -1,13 +1,20 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"flag"
+	"fmt"
+	"image"
+	"image/color"
+	"image/draw"
+	"image/png"
 	"log"
 	"os"
 	"time"
 
 	"github.com/chromedp/chromedp"
+	"github.com/kenshaw/rasterm"
 )
 
 // var jsSpoofer = `
@@ -49,57 +56,29 @@ import (
 //	    `
 func main() {
 	// create context
-	ctx, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
 
 	// run task list
-	var res []string
 	verbose := flag.Bool("v", false, "verbose")
 	timeout := flag.Duration("timeout", 2*time.Minute, "timeout")
 	scale := flag.Float64("scale", 1.5, "scale")
 	padding := flag.Int("padding", 0, "padding")
+	headless := flag.Bool("headless", true, "headless")
 	out := flag.String("out", "", "out")
 	flag.Parse()
-	var screenshot []byte
-	var jsDef = `
-	        const getParameter = WebGLRenderingContext.prototype.getParameter;
-		WebGLRenderingContext.prototype.getParameter = function(parameter) {
-	            if (parameter === 37445) {
-	        	return 'Intel Inc.';
-	            }
-	            if (parameter === 37446) {
-	        	return 'Intel Iris OpenGL Engine';
-	            }
-	            return getParameter(parameter);
-	        };
-
-		`
-
-	err := chromedp.Run(ctx,
-		// chromedp.Navigate(`https://bot.sannysoft.com/`),
-		chromedp.Navigate(`https://nowsecure.nl/`),
-		chromedp.Evaluate(jsDef, nil),
-		chromedp.Evaluate(`Object.keys(window)`, &res),
-		chromedp.CaptureScreenshot(&screenshot),
-	)
-	if err != nil {
-		log.Fatal(err)
-		return
+	if err := run(context.Background(), *headless, *verbose, *timeout, *scale, *padding, *out); err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
 	}
-	err = os.WriteFile("screenshot.png", screenshot, 0644)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	log.Printf("window object keys: %v", res)
 }
 
-func run(ctx context.Context, verbose bool, timeout time.Duration, scale float64, padding int, out string) error {
+func run(ctx context.Context, headless bool, verbose bool, timeout time.Duration, scale float64, padding int, out string) error {
 	var opts []chromedp.ContextOption
 	// create context
 	if verbose {
 		opts = append(opts, chromedp.WithDebugf(log.Printf))
+	}
+	if headless {
+		opts = append(opts, chromedp.WithLogf(log.Printf))
 	}
 	ctx, cancel := chromedp.NewContext(ctx, opts...)
 	defer cancel()
@@ -112,8 +91,7 @@ func run(ctx context.Context, verbose bool, timeout time.Duration, scale float64
 
 	// capture screenshot
 	var buf []byte
-	var err error
-	if err = chromedp.Run(ctx,
+	if err := chromedp.Run(ctx,
 		chromedp.Navigate(`https://fast.com`),
 		chromedp.WaitVisible(`#speed-value.succeeded`),
 		chromedp.Click(`#show-more-details-link`),
@@ -122,5 +100,41 @@ func run(ctx context.Context, verbose bool, timeout time.Duration, scale float64
 	); err != nil {
 		return err
 	}
+	end := time.Now()
+
+	// decode png
+	img, err := png.Decode(bytes.NewReader(buf))
+	if err != nil {
+		return err
+	}
+
+	// pad image
+	if padding != 0 {
+		bounds := img.Bounds()
+		w, h := bounds.Dx(), bounds.Dy()
+		dst := image.NewRGBA(image.Rect(0, 0, w+2*padding, h+2*padding))
+		for x := 0; x < w+2*padding; x++ {
+			for y := 0; y < h+2*padding; y++ {
+				dst.Set(x, y, color.White)
+			}
+		}
+		draw.Draw(dst, dst.Bounds(), img, image.Pt(-padding, -padding), draw.Src)
+		img = dst
+	}
+
+	// write to disk
+	if out != "" {
+		if err := os.WriteFile(out, buf, 0o644); err != nil {
+			return err
+		}
+	}
+
+	// output
+	if err := rasterm.Encode(os.Stdout, img); err != nil {
+		return err
+	}
+
+	// metrics
+	_, err = fmt.Fprintf(os.Stdout, "time: %v\n", end.Sub(start))
 	return err
 }
