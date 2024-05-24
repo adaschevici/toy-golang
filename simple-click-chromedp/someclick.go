@@ -62,8 +62,8 @@ func main() {
 	timeout := flag.Duration("timeout", 2*time.Minute, "timeout")
 	scale := flag.Float64("scale", 1.5, "scale")
 	padding := flag.Int("padding", 0, "padding")
-	headless := flag.Bool("headless", false, "headless")
-	out := flag.String("out", "", "out")
+	headless := flag.Bool("headless", true, "headless")
+	out := flag.String("out", "fast.png", "out")
 	flag.Parse()
 	if err := run(context.Background(), *headless, *verbose, *timeout, *scale, *padding, *out); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -75,7 +75,7 @@ func run(ctx context.Context, headless bool, verbose bool, timeout time.Duration
 	var opts []chromedp.ContextOption
 	var initialOptions = append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("disable-gpu", false),
-		chromedp.Flag("headless", false),
+		chromedp.Flag("headless", headless),
 		chromedp.Flag("no-sandbox", true),
 	)
 	// create context
