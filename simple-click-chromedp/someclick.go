@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"time"
 
-	"github.com/chromedp/cdproto/runtime"
+	// "github.com/chromedp/cdproto/runtime"
 	"github.com/chromedp/chromedp"
 	// "github.com/chromedp/chromedp/kb"
 )
@@ -40,55 +40,50 @@ func main() {
 	// 	chromedp.SendKeys(`.cdx-text-input__input`, kb.Enter, chromedp.ByQuery),
 	// )
 	// time.Sleep(2 * time.Second)
+	var jsSpoofer = `
+		
+		// const getParameter = WebGLRenderingContext.prototype.getParameter;
+		// WebGLRenderingContext.prototype.getParameter = function(parameter) {
+		//     if (parameter === 37445) {
+		// 	return 'Intel Inc.';
+		//     }
+		//     if (parameter === 37446) {
+		// 	return 'Intel Iris OpenGL Engine';
+		//     }
+		//     return getParameter(parameter);
+		// };
+		// // Spoof other common bot-detection properties
+                // Object.defineProperty(navigator, 'webdriver', {
+                //     get: () => false,
+                // });
+
+                // Object.defineProperty(window, 'chrome', {
+                //     get: () => true,
+                // });
+                // //
+                // window.navigator.permissions.query = (parameters) => (
+                //     parameters.name === 'notifications' ?
+                //     Promise.resolve({ state: Notification.permission }) :
+                //     Promise.resolve({ state: 'denied' })
+                // );
+                //
+                // // Spoof languages
+                Object.defineProperty(navigator, 'languages', {
+                    get: () => ['en-UK', 'en'],
+                });
+                //
+                // // Spoof plugins
+                // Object.defineProperty(navigator, 'plugins', {
+                //     get: () => [1, 2, 3, 4, 5],
+                // });
+	    `
 	var screenshot []byte
 	err := chromedp.Run(taskCtx,
 		chromedp.Navigate(`https://bot.sannysoft.com/`),
-		chromedp.ActionFunc(func(ctx context.Context) error {
-			// Inject JavaScript to spoof WebGL properties
-			js := `
-		() => {
-		    const getParameter = WebGLRenderingContext.prototype.getParameter;
-		    WebGLRenderingContext.prototype.getParameter = function(parameter) {
-			if (parameter === 37445) {
-			    return 'Intel Inc.';
-			}
-			if (parameter === 37446) {
-			    return 'Intel Iris OpenGL Engine';
-			}
-			return getParameter(parameter);
-		    };
-		}
-		// Spoof other common bot-detection properties
-                Object.defineProperty(navigator, 'webdriver', {
-                    get: () => false,
-                });
-
-                Object.defineProperty(window, 'chrome', {
-                    get: () => true,
-                });
-
-                window.navigator.permissions.query = (parameters) => (
-                    parameters.name === 'notifications' ?
-                    Promise.resolve({ state: Notification.permission }) :
-                    Promise.resolve({ state: 'denied' })
-                );
-
-                // Spoof languages
-                Object.defineProperty(navigator, 'languages', {
-                    get: () => ['en-US', 'en'],
-                });
-
-                // Spoof plugins
-                Object.defineProperty(navigator, 'plugins', {
-                    get: () => [1, 2, 3, 4, 5],
-                });
-	    `
-			_, _, err := runtime.Evaluate(js).Do(ctx)
-			if err != nil {
-				return err
-			}
-			return nil
-		}),
+		// chromedp.Evaluate(`navigator.userAgent`, func(result *string) {
+		// 	fmt.Println("UserAgent:", *result)
+		// }),
+		chromedp.Evaluate(jsSpoofer, nil),
 		// chromedp.WaitVisible(`body`, chromedp.ByQuery), // Wait for the body to be visible
 		chromedp.Sleep(2*time.Second), // Optional: Wait for any animations or dynamic content to load
 		chromedp.CaptureScreenshot(&screenshot),
@@ -98,7 +93,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = ioutil.WriteFile("screenshot.png", screenshot, 0644)
+	err = os.WriteFile("screenshot.png", screenshot, 0644)
 	if err != nil {
 		fmt.Println("Error saving screenshot:", err)
 		return
