@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 
 	"github.com/chromedp/chromedp"
 )
@@ -51,21 +52,37 @@ func main() {
 	//                //     get: () => [1, 2, 3, 4, 5],
 	//                // });
 	//     `
+	var screenshot []byte
 	var jsDef = `
-		Object.defineProperty(window, 'languages', {
-			get: function() {
-				return true;	
-			}
-		});
+	        const getParameter = WebGLRenderingContext.prototype.getParameter;
+		WebGLRenderingContext.prototype.getParameter = function(parameter) {
+	            if (parameter === 37445) {
+	        	return 'Intel Inc.';
+	            }
+	            if (parameter === 37446) {
+	        	return 'Intel Iris OpenGL Engine';
+	            }
+	            return getParameter(parameter);
+	        };
 
 		`
 
 	err := chromedp.Run(ctx,
-		chromedp.Navigate(`https://www.google.com/`),
+		// chromedp.Navigate(`https://bot.sannysoft.com/`),
+		chromedp.Navigate(`https://nowsecure.nl/`),
 		chromedp.Evaluate(jsDef, nil),
+		chromedp.Evaluate(`Object.keys(window)`, &res),
+		chromedp.Sleep(5),
+		chromedp.CaptureScreenshot(&screenshot),
 	)
 	if err != nil {
 		log.Fatal(err)
+		return
+	}
+	err = os.WriteFile("screenshot.png", screenshot, 0644)
+	if err != nil {
+		log.Fatal(err)
+		return
 	}
 
 	log.Printf("window object keys: %v", res)
