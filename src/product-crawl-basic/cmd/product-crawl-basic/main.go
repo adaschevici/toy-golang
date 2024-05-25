@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	// "time"
 
 	//"github.com/chromedp/cdproto/dom"
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/page"
+	"github.com/chromedp/cdproto/target"
 	"github.com/chromedp/chromedp"
 )
 
@@ -57,6 +59,21 @@ func waitFor(ctx context.Context, eventName string) error {
 	case <-ctx.Done():
 		return ctx.Err()
 	}
+}
+func getIframeContext(ctx context.Context, uriPart string) context.Context {
+	targets, _ := chromedp.Targets(ctx)
+	var tgt *target.Info
+	for _, t := range targets {
+		fmt.Println(t.Title, "|", t.Type, "|", t.URL, "|", t.TargetID)
+		if t.Type == "iframe" && strings.Contains(t.URL, uriPart) {
+			tgt = t
+		}
+	}
+	if tgt != nil {
+		ictx, _ := chromedp.NewContext(ctx, chromedp.WithTargetID(tgt.TargetID))
+		return ictx
+	}
+	return nil
 }
 
 func main() {
