@@ -59,14 +59,21 @@ func waitFor(ctx context.Context, eventName string) error {
 }
 
 func main() {
-	ctx, cancel := chromedp.NewContext(context.Background())
+	var initialOptions = append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("disable-gpu", false),
+		chromedp.Flag("headless", false),
+		chromedp.Flag("no-sandbox", true),
+	)
+	// create context
+	startCtx, _ := chromedp.NewExecAllocator(context.Background(), initialOptions...)
+	ctx, cancel := chromedp.NewContext(startCtx)
 	defer cancel()
 
 	var html string
 	err := chromedp.Run(ctx,
 		// visit the target page
 		chromedp.Tasks{
-			navigateAndWaitForLoad("https://bot.sannysoft.com/", "networkIdle"),
+			navigateAndWaitForLoad("http://localhost:8000/root.html", "networkIdle"),
 		},
 		// wait for the page to load
 		chromedp.Sleep(2*time.Second),
