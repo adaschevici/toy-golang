@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
+	// "time"
 
-	"github.com/chromedp/cdproto/dom"
+	//"github.com/chromedp/cdproto/dom"
+	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
 )
@@ -70,40 +71,14 @@ func main() {
 	defer cancel()
 
 	var html string
-	var iframeContent string
+	var iframeNode []*cdp.Node
 	err := chromedp.Run(ctx,
 		// visit the target page
 		chromedp.Tasks{
 			navigateAndWaitForLoad("http://localhost:8000/root.html", "networkIdle"),
 		},
 		chromedp.WaitReady("iframe", chromedp.ByQuery),
-		// Switch to the iframe context
-		chromedp.Tasks{
-			chromedp.ActionFunc(func(ctx context.Context) error {
-				// Get the iframe node ID
-				var iframeNodeID chromedp.Node
-				if err := chromedp.NodeIDs("iframe", &iframeNodeID).Do(ctx); err != nil {
-					return err
-				}
-
-				// Switch to the iframe
-				if err := chromedp.Frame(iframeNodeID).Do(ctx); err != nil {
-					return err
-				}
-
-				// Wait until the iframe body is fully loaded
-				if err := chromedp.WaitReady("body").Do(ctx); err != nil {
-					return err
-				}
-
-				// Get the iframe content
-				if err := chromedp.Evaluate(`document.documentElement.outerHTML`, &iframeContent).Do(ctx); err != nil {
-					return err
-				}
-
-				return nil
-			}),
-		},
+		chromedp.Nodes("iframe", &iframeNode, chromedp.ByQuery),
 		// get the outer HTML of the page
 		// chromedp.ActionFunc(func(ctx context.Context) error {
 		// 	node, err := dom.GetDocument().Do(ctx)
