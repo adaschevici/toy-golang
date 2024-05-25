@@ -70,22 +70,49 @@ func main() {
 	defer cancel()
 
 	var html string
+	var iframeContent string
 	err := chromedp.Run(ctx,
 		// visit the target page
 		chromedp.Tasks{
 			navigateAndWaitForLoad("http://localhost:8000/root.html", "networkIdle"),
 		},
-		// wait for the page to load
-		chromedp.Sleep(2*time.Second),
+		chromedp.WaitReady("iframe", chromedp.ByQuery),
+		// Switch to the iframe context
+		chromedp.Tasks{
+			chromedp.ActionFunc(func(ctx context.Context) error {
+				// Get the iframe node ID
+				var iframeNodeID chromedp.Node
+				if err := chromedp.NodeIDs("iframe", &iframeNodeID).Do(ctx); err != nil {
+					return err
+				}
+
+				// Switch to the iframe
+				if err := chromedp.Frame(iframeNodeID).Do(ctx); err != nil {
+					return err
+				}
+
+				// Wait until the iframe body is fully loaded
+				if err := chromedp.WaitReady("body").Do(ctx); err != nil {
+					return err
+				}
+
+				// Get the iframe content
+				if err := chromedp.Evaluate(`document.documentElement.outerHTML`, &iframeContent).Do(ctx); err != nil {
+					return err
+				}
+
+				return nil
+			}),
+		},
 		// get the outer HTML of the page
-		chromedp.ActionFunc(func(ctx context.Context) error {
-			node, err := dom.GetDocument().Do(ctx)
-			if err != nil {
-				return err
-			}
-			html, err = dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
-			return err
-		}),
+		// chromedp.ActionFunc(func(ctx context.Context) error {
+		// 	node, err := dom.GetDocument().Do(ctx)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	html, err = dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
+		// 	return err
+		// }),
 	)
 	if err != nil {
 		log.Fatal(err)
