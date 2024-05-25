@@ -87,6 +87,17 @@ func main() {
 	ctx, cancel := chromedp.NewContext(startCtx)
 	defer cancel()
 
+	ictx := getIframeContext(ctx, "/substring/in/iframe/uri/")
+	selector := "a.LinkInIframe"
+	script := fmt.Sprintf("document.querySelector(\"%s\").href;", selector)
+	var b []byte
+	_ = chromedp.Run(
+		ictx, // <-- instead of ctx
+		chromedp.WaitVisible(selector, chromedp.ByQuery),
+		chromedp.Evaluate(script, &b),
+	)
+	fmt.Println("href in iframe:", string(b))
+
 	var html string
 	var iframeNode []*cdp.Node
 	err := chromedp.Run(ctx,
