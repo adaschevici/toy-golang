@@ -66,7 +66,6 @@ func main() {
 	err := chromedp.Run(ctx,
 		// visit the target page
 		chromedp.Tasks{
-			enableLifeCycleEvents(),
 			navigateAndWaitForLoad("https://bot.sannysoft.com/", "networkIdle"),
 		},
 		// wait for the page to load
