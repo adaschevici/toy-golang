@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	// "log"
+	"encoding/json"
 	"strings"
 	// "time"
 
 	//"github.com/chromedp/cdproto/dom"
-	"github.com/chromedp/cdproto/cdp"
+	// "github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/cdproto/target"
 	"github.com/chromedp/chromedp"
@@ -63,9 +64,13 @@ func waitFor(ctx context.Context, eventName string) error {
 func getIframeContext(ctx context.Context, uriPart string) context.Context {
 	targets, _ := chromedp.Targets(ctx)
 	var tgt *target.Info
+	fmt.Printf("%#v", targets)
+	fmt.Printf("%#v", uriPart)
+	jsonStr, _ := json.MarshalIndent(targets, "", "  ")
+	fmt.Println(string(jsonStr))
 	for _, t := range targets {
-		fmt.Println(t.Title, "|", t.Type, "|", t.URL, "|", t.TargetID)
 		if t.Type == "iframe" && strings.Contains(t.URL, uriPart) {
+			fmt.Println(t.Title, "|", t.Type, "|", t.URL, "|", t.TargetID)
 			tgt = t
 		}
 	}
@@ -80,15 +85,14 @@ func main() {
 	var initialOptions = append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("disable-gpu", false),
 		chromedp.Flag("headless", false),
-		chromedp.Flag("no-sandbox", true),
 	)
 	// create context
 	startCtx, _ := chromedp.NewExecAllocator(context.Background(), initialOptions...)
 	ctx, cancel := chromedp.NewContext(startCtx)
 	defer cancel()
 
-	ictx := getIframeContext(ctx, "/substring/in/iframe/uri/")
-	selector := "a.LinkInIframe"
+	ictx := getIframeContext(ctx, "8081")
+	selector := "h1"
 	script := fmt.Sprintf("document.querySelector(\"%s\").href;", selector)
 	var b []byte
 	_ = chromedp.Run(
@@ -98,27 +102,27 @@ func main() {
 	)
 	fmt.Println("href in iframe:", string(b))
 
-	var html string
-	var iframeNode []*cdp.Node
-	err := chromedp.Run(ctx,
-		// visit the target page
-		chromedp.Tasks{
-			navigateAndWaitForLoad("http://localhost:8000/root.html", "networkIdle"),
-		},
-		chromedp.WaitReady("iframe", chromedp.ByQuery),
-		chromedp.Nodes("iframe", &iframeNode, chromedp.ByQuery),
-		// get the outer HTML of the page
-		// chromedp.ActionFunc(func(ctx context.Context) error {
-		// 	node, err := dom.GetDocument().Do(ctx)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	html, err = dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
-		// 	return err
-		// }),
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(html)
+	// var html string
+	// var iframeNode []*cdp.Node
+	// err := chromedp.Run(ctx,
+	// 	// visit the target page
+	// 	chromedp.Tasks{
+	// 		navigateAndWaitForLoad("http://localhost:8000/root.html", "networkIdle"),
+	// 	},
+	// 	chromedp.WaitReady("iframe", chromedp.ByQuery),
+	// 	chromedp.Nodes("iframe", &iframeNode, chromedp.ByQuery),
+	// 	// get the outer HTML of the page
+	// 	// chromedp.ActionFunc(func(ctx context.Context) error {
+	// 	// 	node, err := dom.GetDocument().Do(ctx)
+	// 	// 	if err != nil {
+	// 	// 		return err
+	// 	// 	}
+	// 	// 	html, err = dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
+	// 	// 	return err
+	// 	// }),
+	// )
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println(html)
 }

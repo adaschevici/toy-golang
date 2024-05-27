@@ -21,13 +21,14 @@
 <body>
     <h1>Parent Page</h1>
     <p>This is the parent page. The iframe below will load after a delay.</p>
-    <iframe id="delayed-iframe" src="about:blank"></iframe>
+    <iframe id="delayed-iframe" src="http://localhost:8081/iframe.html"></iframe>
 
     <script>
+        // document.getElementById('delayed-iframe').url = 'http://localhost:8081/iframe.html';
         // Delay loading the iframe content
-        setTimeout(function() {
-            document.getElementById('delayed-iframe').src = 'iframe.html';
-        }, 5000); // 5 seconds delay
+        // setTimeout(function() {
+        //     document.getElementById('delayed-iframe').src = 'iframe.html';
+        // }, 5000); // 5 seconds delay
     </script>
 </body>
 </html>
