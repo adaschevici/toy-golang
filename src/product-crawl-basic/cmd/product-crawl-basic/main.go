@@ -6,7 +6,7 @@ import (
 	// "log"
 	"encoding/json"
 	"strings"
-	// "time"
+	"time"
 
 	//"github.com/chromedp/cdproto/dom"
 	// "github.com/chromedp/cdproto/cdp"
@@ -91,6 +91,10 @@ func main() {
 	ctx, cancel := chromedp.NewContext(startCtx)
 	defer cancel()
 
+	chromedp.Run(ctx,
+		chromedp.Navigate("http://localhost:8000/root.html"),
+		chromedp.Sleep(2*time.Second),
+	)
 	ictx := getIframeContext(ctx, "8081")
 	selector := "h1"
 	script := fmt.Sprintf("document.querySelector(\"%s\").href;", selector)
