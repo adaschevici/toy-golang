@@ -2,14 +2,14 @@ package main
 
 import (
 	"context"
-	"fmt"
-	// "log"
 	"encoding/json"
+	"fmt"
+	"log"
 	"strings"
 	"time"
 
 	//"github.com/chromedp/cdproto/dom"
-	// "github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/cdproto/target"
 	"github.com/chromedp/chromedp"
@@ -95,16 +95,15 @@ func main() {
 		chromedp.Navigate("http://localhost:8000/root.html"),
 		chromedp.Sleep(2*time.Second),
 	)
-	ictx := getIframeContext(ctx, "8081")
-	selector := "h1"
-	script := fmt.Sprintf("document.querySelector(\"%s\").href;", selector)
-	var b []byte
-	_ = chromedp.Run(
-		ictx, // <-- instead of ctx
-		chromedp.WaitVisible(selector, chromedp.ByQuery),
-		chromedp.Evaluate(script, &b),
-	)
-	fmt.Println("href in iframe:", string(b))
+	var iframes []*cdp.Node
+	if err := chromedp.Run(ctx, chromedp.Nodes(`iframe`, &iframes, chromedp.ByQuery)); err != nil {
+		log.Fatal(err)
+	}
+	if err := chromedp.Run(ctx,
+		chromedp.WaitVisible(`h1`, chromedp.ByID, chromedp.FromNode(iframes[0])),
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// var html string
 	// var iframeNode []*cdp.Node
