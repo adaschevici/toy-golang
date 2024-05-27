@@ -95,11 +95,11 @@ func main() {
 	chromedp.Run(ctx,
 		chromedp.Navigate("http://localhost:8000/root.html"),
 		chromedp.Sleep(2*time.Second),
-		chromedp.Text(`h1#cucamanga`, &header, chromedp.ByQuery),
-		// chromedp.ActionFunc(func(ctx context.Context) error {
-		// 	fmt.Println(header)
-		// 	return nil
-		// }),
+		chromedp.Text(`h1#coca`, &header, chromedp.ByQuery),
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			fmt.Println(header)
+			return nil
+		}),
 	)
 	fmt.Println(header)
 	// var iframes []*cdp.Node
