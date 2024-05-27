@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	// "log"
 	"strings"
 	"time"
 
 	//"github.com/chromedp/cdproto/dom"
-	"github.com/chromedp/cdproto/cdp"
+	// "github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/cdproto/target"
 	"github.com/chromedp/chromedp"
@@ -91,20 +91,32 @@ func main() {
 	ctx, cancel := chromedp.NewContext(startCtx)
 	defer cancel()
 
+	var header string
 	chromedp.Run(ctx,
 		chromedp.Navigate("http://localhost:8000/root.html"),
 		chromedp.Sleep(2*time.Second),
+		chromedp.Text(`h1#cucamanga`, &header, chromedp.ByQuery),
+		// chromedp.ActionFunc(func(ctx context.Context) error {
+		// 	fmt.Println(header)
+		// 	return nil
+		// }),
 	)
-	var iframes []*cdp.Node
-	if err := chromedp.Run(ctx, chromedp.Nodes(`iframe`, &iframes, chromedp.ByQuery)); err != nil {
-		log.Fatal(err)
-	}
-	if err := chromedp.Run(ctx,
-		chromedp.WaitVisible(`h1`, chromedp.ByID, chromedp.FromNode(iframes[0])),
-	); err != nil {
-		log.Fatal(err)
-	}
-
+	fmt.Println(header)
+	// var iframes []*cdp.Node
+	// if err := chromedp.Run(ctx, chromedp.Nodes(`iframe`, &iframes, chromedp.ByQuery)); err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Printf("%#v", iframes)
+	// if err := chromedp.Run(ctx,
+	// 	chromedp.Text(`h1#cucamanga`, &header, chromedp.ByID, chromedp.FromNode(iframes[0])),
+	// 	chromedp.ActionFunc(func(ctx context.Context) error {
+	// 		fmt.Println(header)
+	// 		return nil
+	// 	}),
+	// ); err != nil {
+	// 	log.Fatal(err)
+	// }
+	//
 	// var html string
 	// var iframeNode []*cdp.Node
 	// err := chromedp.Run(ctx,
