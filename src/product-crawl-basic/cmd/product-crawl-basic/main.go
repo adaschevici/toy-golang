@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	// "log"
+	"log"
 	"strings"
 	"time"
 
-	//"github.com/chromedp/cdproto/dom"
-	// "github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/cdproto/dom"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/cdproto/target"
 	"github.com/chromedp/chromedp"
@@ -102,12 +102,39 @@ func main() {
 		}),
 	)
 	fmt.Println(header)
-	// var iframes []*cdp.Node
-	// if err := chromedp.Run(ctx, chromedp.Nodes(`iframe`, &iframes, chromedp.ByQuery)); err != nil {
-	// 	log.Fatal(err)
-	// }
+	var iframes []*cdp.Node
+	if err := chromedp.Run(ctx,
+		chromedp.Nodes(`iframe`, &iframes, chromedp.ByQueryAll),
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			body, err := dom.GetOuterHTML().WithNodeID(iframes[0].NodeID).Do(ctx)
+			if err != nil {
+				return err
+			}
+			fmt.Println(body)
+			return nil
+		}),
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			targets, _ := chromedp.Targets(ctx)
+			jsonStr, _ := json.MarshalIndent(targets, "", "  ")
+			fmt.Println(string(jsonStr))
+			return nil
+		}),
+	); err != nil {
+		log.Fatal(err)
+	}
 	// fmt.Printf("%#v", iframes)
-	// if err := chromedp.Run(ctx,
+	// fmt.Printf("%#v", iframes[0].NodeID)
+	// var outerHTML string
+	// chromedp.Run(ctx,
+	// 	chromedp.Evaluate(`document.querySelector('[id="coca"]').outerHTML`, &outerHTML),
+	// )
+	// fmt.Println(outerHTML)
+	// // // ictx, _ := chromedp.NewContext(ctx, chromedp.WithTargetID(iframes[0].TargetID))
+	//
+	// chromedp.Run(ctx,
+	// 	chromedp.Text(`h1#cucamanga`, &header, chromedp.ByID, chromedp.FromNode(iframes[0])),
+	// )
+	// // if err := chromedp.Run(ctx,
 	// 	chromedp.Text(`h1#cucamanga`, &header, chromedp.ByID, chromedp.FromNode(iframes[0])),
 	// 	chromedp.ActionFunc(func(ctx context.Context) error {
 	// 		fmt.Println(header)
