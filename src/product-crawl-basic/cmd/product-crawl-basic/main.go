@@ -6,7 +6,7 @@ import (
 	"fmt"
 	// "log"
 	// "strings"
-	// "time"
+	"time"
 
 	"github.com/chromedp/cdproto/cdp"
 	// "github.com/chromedp/cdproto/dom"
@@ -42,6 +42,7 @@ func main() {
 	var text string
 	if err := chromedp.Run(ctx,
 		chromedp.Text("#cucamanga2", &text, chromedp.ByQuery, chromedp.FromNode(iframes[0])),
+		chromedp.Sleep(5*time.Second),
 	); err != nil {
 		fmt.Println(err)
 	}

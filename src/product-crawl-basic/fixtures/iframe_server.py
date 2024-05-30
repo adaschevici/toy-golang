@@ -3,7 +3,7 @@ import time
 import os
 
 class DelayedHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
-    delay_seconds = 20
+    delay_seconds = 3
     def do_GET(self):
         # Introduce a delay before serving the file
         time.sleep(self.delay_seconds)
