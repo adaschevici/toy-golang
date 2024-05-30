@@ -36,9 +36,12 @@ func main() {
 		fmt.Println(err)
 	}
 
+	if err := chromedp.Run(ctx, chromedp.Nodes(`iframe`, &iframes, chromedp.ByQuery, chromedp.FromNode(iframes[0]))); err != nil {
+		fmt.Println(err)
+	}
 	var text string
 	if err := chromedp.Run(ctx,
-		chromedp.Text("#cucamanga", &text, chromedp.ByQuery, chromedp.FromNode(iframes[0])),
+		chromedp.Text("#cucamanga2", &text, chromedp.ByQuery, chromedp.FromNode(iframes[0])),
 	); err != nil {
 		fmt.Println(err)
 	}
