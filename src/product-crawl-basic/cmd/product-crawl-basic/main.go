@@ -46,6 +46,27 @@ func main() {
 	); err != nil {
 		fmt.Println(err)
 	}
+
+	fmt.Println(text)
+
+	// start second navigation scenario
+	if err := chromedp.Run(ctx,
+		chromedp.Navigate(`http://localhost:8000/root.html`),
+	); err != nil {
+		fmt.Println(err)
+	}
+
+	iframeID := "root-iframe"
+	var secondSetIframes []*cdp.Node
+	if err := chromedp.Run(ctx, chromedp.Nodes(fmt.Sprintf("#%s", iframeID), &secondSetIframes)); err != nil {
+		fmt.Println(err)
+	}
+	getIframeOneContentScript := fmt.Sprintf(`var iframeOneContent = document.querySelector("#%s").textContent; return iframeContent`, "cucamanga")
+	if err := chromedp.Run(ctx,
+		chromedp.Evaluate(getIframeOneContentScript, &text /* I wish this worked to give the JS execution a context, chromedp.FromNode(secondSetIframes[0])*/),
+	); err != nil {
+		fmt.Println(err)
+	}
 	fmt.Println(text)
 
 }
