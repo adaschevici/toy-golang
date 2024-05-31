@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func main() {
+func Crawl() {
 	// initialize a controllable Chrome instance
 	ctx, cancel := chromedp.NewContext(
 		context.Background(),

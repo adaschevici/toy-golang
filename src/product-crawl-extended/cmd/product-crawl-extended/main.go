@@ -15,7 +15,7 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("cmd run")
 			fmt.Println("args", args)
-			stage_one.Init()
+			stage_one.Crawl()
 		},
 	}
 	rootCmd.AddCommand(cmd)
