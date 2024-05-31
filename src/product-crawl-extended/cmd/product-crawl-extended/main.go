@@ -1,20 +1,20 @@
 package main
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"log"
 	"product-crawl-extended/internal/first_automation"
 )
 
 func main() {
 	var rootCmd = &cobra.Command{Use: "spider"}
+	log.SetFormatter(&log.JSONFormatter{})
 	var cmd = &cobra.Command{
 		Use:   "crawl",
 		Short: "crawl basic set automation1",
 		Long:  "This is the first crawl command and does very basic set automation.",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("args", args)
+			log.Debug("args", args)
 		},
 	}
 	var basic = &cobra.Command{
@@ -22,8 +22,8 @@ func main() {
 		Short: "crawl basic set automation",
 		Long:  "This is the first crawl command and does basic set automation.",
 		Run: func(cmd *cobra.Command, args []string) {
-			log.Println("cmd running basic automation")
-			log.Println("args", args)
+			log.Info("cmd running basic automation")
+			log.Debugf("args", args)
 			first_automation.Crawl()
 		},
 	}
