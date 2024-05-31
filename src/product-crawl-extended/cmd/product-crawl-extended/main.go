@@ -9,11 +9,12 @@ import (
 func main() {
 	var rootCmd = &cobra.Command{Use: "spider"}
 	var cmd = &cobra.Command{
-		Use:   "cmd",
-		Short: "cmd short",
-		Long:  "cmd long",
+		Use:   "crawl",
+		Short: "crawl basic set automation",
+		Long:  "This is the first crawl command and does very basic set automation.",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("cmd run")
+			fmt.Println("args", args)
 			stage_one.Init()
 		},
 	}
