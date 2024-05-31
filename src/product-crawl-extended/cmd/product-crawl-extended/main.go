@@ -3,18 +3,31 @@ package main
 import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"os"
 	"product-crawl-extended/internal/first_automation"
 )
 
+func setup() {
+	log.SetOutput(os.Stdout)
+	log.SetFormatter(&log.JSONFormatter{})
+}
+func setupLogger() *log.Logger {
+	logger := log.New()
+	logger.SetFormatter(&log.TextFormatter{
+		ForceColors: true, // Enable colors in the output
+	})
+	return logger
+}
+
 func main() {
 	var rootCmd = &cobra.Command{Use: "spider"}
-	log.SetFormatter(&log.JSONFormatter{})
+	logger := setupLogger()
 	var cmd = &cobra.Command{
 		Use:   "crawl",
 		Short: "crawl basic set automation1",
 		Long:  "This is the first crawl command and does very basic set automation.",
 		Run: func(cmd *cobra.Command, args []string) {
-			log.Debug("args", args)
+			logger.Debug("args", args)
 		},
 	}
 	var basic = &cobra.Command{
@@ -22,22 +35,12 @@ func main() {
 		Short: "crawl basic set automation",
 		Long:  "This is the first crawl command and does basic set automation.",
 		Run: func(cmd *cobra.Command, args []string) {
-			log.Info("cmd running basic automation")
-			log.Debugf("args", args)
+			logger.Info("cmd running basic automation")
+			logger.Debug("args", args)
 			first_automation.Crawl()
 		},
 	}
-	// var cmd3 = &cobra.Command{
-	// 	Use:   "website",
-	// 	Short: "crawl basic set automation3",
-	// 	Long:  "This is the first crawl command and does very basic set a.",
-	// 	Run: func(cmd *cobra.Command, args []string) {
-	// 		fmt.Println("cmd runs")
-	// 		fmt.Println("args", args)
-	// 		stage_one.Crawl()
-	// 	},
-	// }
-	// rootCmd.AddCommand(cmd)
+	rootCmd.AddCommand(cmd)
 	cmd.AddCommand(basic)
 	rootCmd.Execute()
 }
