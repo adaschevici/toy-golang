@@ -6,14 +6,17 @@ import (
 	"github.com/chromedp/cdproto/dom"
 	"github.com/chromedp/chromedp"
 	"log"
-	"time"
+	// "time"
 )
 
 func Crawl() {
-	// initialize a controllable Chrome instance
-	ctx, cancel := chromedp.NewContext(
-		context.Background(),
+	var initialOptions = append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("disable-gpu", false),
+		chromedp.Flag("headless", false),
 	)
+	startCtx, _ := chromedp.NewExecAllocator(context.Background(), initialOptions...)
+	// initialize a controllable Chrome instance
+	ctx, cancel := chromedp.NewContext(startCtx)
 	// to release the browser resources when
 	// it is no longer needed
 	defer cancel()
@@ -23,7 +26,7 @@ func Crawl() {
 		// visit the target page
 		chromedp.Navigate("https://scrapingclub.com/exercise/list_infinite_scroll/"),
 		// wait for the page to load
-		chromedp.Sleep(2000*time.Millisecond),
+		// chromedp.Sleep(2000*time.Millisecond),
 		// extract the raw HTML from the page
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			// select the root node on the page
