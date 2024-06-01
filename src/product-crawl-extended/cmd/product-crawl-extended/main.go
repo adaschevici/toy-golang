@@ -40,7 +40,17 @@ func main() {
 			first_automation.Crawl()
 		},
 	}
+	var extent_one = &cobra.Command{
+		Use:   "extent_one",
+		Short: "crawl second stage automation",
+		Long:  "This is the second crawl command and does slightly more automation.",
+		Run: func(cmd *cobra.Command, args []string) {
+			logger.Info("cmd running extended one automation")
+			logger.Debug("args", args)
+			first_automation.Crawl()
+		},
+	}
 	rootCmd.AddCommand(cmd)
-	cmd.AddCommand(basic)
+	cmd.AddCommand(basic, extent_one)
 	rootCmd.Execute()
 }
