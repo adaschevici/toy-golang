@@ -1,4 +1,4 @@
-package first_automation
+package second_step
 
 import (
 	"context"
