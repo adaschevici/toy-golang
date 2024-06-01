@@ -6,7 +6,7 @@ import (
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/chromedp"
 	"log"
-	"time"
+	// "time"
 )
 
 type Product struct {
@@ -49,7 +49,7 @@ func Crawl() {
 		// visit the target page
 		chromedp.Navigate("https://scrapingclub.com/exercise/list_infinite_scroll/"),
 		chromedp.Evaluate(script, nil),
-		chromedp.Sleep(5*time.Second),
+		chromedp.WaitVisible(".post:nth-child(60)"),
 		chromedp.Nodes(`.post`, &productNodes, chromedp.ByQueryAll),
 	); err != nil {
 		log.Fatal("Error while trying to grab product items.", err)
