@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"product-crawl-extended/internal/first_automation"
+	"product-crawl-extended/internal/fourth_step"
 	"product-crawl-extended/internal/second_step"
 	"product-crawl-extended/internal/third_step"
 )
@@ -48,7 +49,7 @@ func main() {
 		Short: "crawl second stage automation",
 		Long:  "This is the second crawl command and does slightly more automation.",
 		Run: func(cmd *cobra.Command, args []string) {
-			logger.Info("cmd running extended one automation")
+			logger.Info("cmd running extended first automation")
 			logger.Debug("args", args)
 			second_step.Crawl()
 		},
@@ -58,12 +59,22 @@ func main() {
 		Short: "crawl second stage automation with events",
 		Long:  "This is the third crawl command and does slightly more automation with events included.",
 		Run: func(cmd *cobra.Command, args []string) {
-			logger.Info("cmd running extended one automation")
+			logger.Info("cmd running extended second automation")
+			logger.Debug("args", args)
+			third_step.Crawl()
+		},
+	}
+	var extent_three = &cobra.Command{
+		Use:   "extend_screenshot",
+		Short: "crawl second stage automation with taking a screenshot",
+		Long:  "This is the fourth crawl command and does slightly more automation with taking a screenshot.",
+		Run: func(cmd *cobra.Command, args []string) {
+			logger.Info("cmd running extended third automation")
 			logger.Debug("args", args)
 			third_step.Crawl()
 		},
 	}
 	rootCmd.AddCommand(cmd)
-	cmd.AddCommand(basic, extent_one, extent_two)
+	cmd.AddCommand(basic, extent_one, extent_two, extent_three)
 	rootCmd.Execute()
 }
