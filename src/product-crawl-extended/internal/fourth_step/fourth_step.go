@@ -6,6 +6,7 @@ import (
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/chromedp"
 	"log"
+	"os"
 	// "time"
 )
 
@@ -51,8 +52,12 @@ func Crawl() {
 		chromedp.Evaluate(script, nil),
 		chromedp.WaitVisible(".post:nth-child(60)"),
 		chromedp.FullScreenshot(&screenshotBuffer, 100),
+		chromedp.Screenshot(`.post:nth-child(59)`, &screenshotBuffer, chromedp.NodeVisible),
 		chromedp.Nodes(`.post`, &productNodes, chromedp.ByQueryAll),
 	); err != nil {
 		log.Fatal("Error while trying to grab product items.", err)
+	}
+	if err := os.WriteFile("screenshot.png", screenshotBuffer, 0644); err != nil {
+		log.Fatal("Error while trying to write the screenshot to a file.", err)
 	}
 }
