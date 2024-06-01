@@ -28,15 +28,17 @@ func Crawl() {
 
 	var script = `
 		// scroll down the page 8 times
-		const scrolls = 8
-		let scrollCount = 0
-		
+		let totalHeight = 0;
+		let distance = 500;
+
 		// scroll down and then wait for 0.5s
 		const scrollInterval = setInterval(() => {
-		  window.scrollTo(0, document.body.scrollHeight)
-		  scrollCount++
+		  const scrollHeight = document.body.scrollHeight;
+
+		  window.scrollBy(0, distance);
+		  totalHeight += distance;
 		
-		  if (scrollCount === numScrolls) {
+		  if (totalHeight >= scrollHeight) {
 		   clearInterval(scrollInterval)
 		  }
 		}, 500)
@@ -47,7 +49,7 @@ func Crawl() {
 		// visit the target page
 		chromedp.Navigate("https://scrapingclub.com/exercise/list_infinite_scroll/"),
 		chromedp.Evaluate(script, nil),
-		chromedp.Sleep(50*time.Second),
+		chromedp.Sleep(5*time.Second),
 		chromedp.Nodes(`.post`, &productNodes, chromedp.ByQueryAll),
 	); err != nil {
 		log.Fatal("Error while trying to grab product items.", err)
