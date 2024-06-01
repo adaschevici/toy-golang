@@ -1,9 +1,67 @@
 package third_step
 
 import (
+	"context"
 	"fmt"
+	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/chromedp"
+	"log"
+	"time"
 )
 
+type Product struct {
+	name, price string
+}
+
 func Crawl() {
-	fmt.Println("This is the third crawl command and does slightly more automation with events included.")
+	var products []Product
+	var initialOptions = append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("disable-gpu", false),
+		chromedp.Flag("headless", false),
+	)
+	startCtx, _ := chromedp.NewExecAllocator(context.Background(), initialOptions...)
+	// initialize a controllable Chrome instance
+	ctx, cancel := chromedp.NewContext(startCtx)
+	// to release the browser resources when
+	// it is no longer needed
+	defer cancel()
+
+	var script = `
+		// scroll down the page 8 times
+		const scrolls = 8
+		let scrollCount = 0
+		
+		// scroll down and then wait for 0.5s
+		const scrollInterval = setInterval(() => {
+		  window.scrollTo(0, document.body.scrollHeight)
+		  scrollCount++
+		
+		  if (scrollCount === numScrolls) {
+		   clearInterval(scrollInterval)
+		  }
+		}, 500)
+	       `
+	var productNodes []*cdp.Node
+
+	if err := chromedp.Run(ctx,
+		// visit the target page
+		chromedp.Navigate("https://scrapingclub.com/exercise/list_infinite_scroll/"),
+		chromedp.Evaluate(script, nil),
+		chromedp.Sleep(50*time.Second),
+		chromedp.Nodes(`.post`, &productNodes, chromedp.ByQueryAll),
+	); err != nil {
+		log.Fatal("Error while trying to grab product items.", err)
+	}
+	var name, price string
+	for _, node := range productNodes {
+		if err := chromedp.Run(ctx,
+			chromedp.Text(`h4`, &name, chromedp.ByQuery, chromedp.FromNode(node)),
+			chromedp.Text(`h5`, &price, chromedp.ByQuery, chromedp.FromNode(node)),
+		); err != nil {
+			log.Fatal("Error while trying to grab product items.", err)
+		}
+		products = append(products, Product{name: name, price: price})
+	}
+	fmt.Println(products)
+
 }
