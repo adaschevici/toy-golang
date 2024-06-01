@@ -71,7 +71,7 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			logger.Info("cmd running extended third automation")
 			logger.Debug("args", args)
-			third_step.Crawl()
+			fourth_step.Crawl()
 		},
 	}
 	rootCmd.AddCommand(cmd)
