@@ -11,6 +11,7 @@ func setup() {
 	log.SetOutput(os.Stdout)
 	log.SetFormatter(&log.JSONFormatter{})
 }
+
 func setupLogger() *log.Logger {
 	logger := log.New()
 	logger.SetFormatter(&log.TextFormatter{
@@ -41,7 +42,7 @@ func main() {
 		},
 	}
 	var extent_one = &cobra.Command{
-		Use:   "extent_one",
+		Use:   "extend_one",
 		Short: "crawl second stage automation",
 		Long:  "This is the second crawl command and does slightly more automation.",
 		Run: func(cmd *cobra.Command, args []string) {
