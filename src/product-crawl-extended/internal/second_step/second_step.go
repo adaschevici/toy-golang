@@ -3,12 +3,17 @@ package second_step
 import (
 	"context"
 	"fmt"
-	"github.com/chromedp/cdproto/dom"
+	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/chromedp"
 	"log"
 )
 
+type Product struct {
+	name, price string
+}
+
 func Crawl() {
+	var products []Product
 	var initialOptions = append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("disable-gpu", false),
 		chromedp.Flag("headless", false),
@@ -20,26 +25,25 @@ func Crawl() {
 	// it is no longer needed
 	defer cancel()
 
-	var html string
-	err := chromedp.Run(ctx,
+	var productNodes []*cdp.Node
+
+	if err := chromedp.Run(ctx,
 		// visit the target page
 		chromedp.Navigate("https://scrapingclub.com/exercise/list_infinite_scroll/"),
-		// wait for the page to load
-		// chromedp.Sleep(2000*time.Millisecond),
-		// extract the raw HTML from the page
-		chromedp.ActionFunc(func(ctx context.Context) error {
-			// select the root node on the page
-			rootNode, err := dom.GetDocument().Do(ctx)
-			if err != nil {
-				return err
-			}
-			html, err = dom.GetOuterHTML().WithNodeID(rootNode.NodeID).Do(ctx)
-			return err
-		}),
-	)
-	if err != nil {
-		log.Fatal("Error while performing the automation logic:", err)
+		chromedp.Nodes(`.post`, &productNodes, chromedp.ByQueryAll),
+	); err != nil {
+		log.Fatal("Error while trying to grab product items.", err)
 	}
+	var name, price string
+	for _, node := range productNodes {
+		if err := chromedp.Run(ctx,
+			chromedp.Text(`h4`, &name, chromedp.ByQuery, chromedp.FromNode(node)),
+			chromedp.Text(`h5`, &price, chromedp.ByQuery, chromedp.FromNode(node)),
+		); err != nil {
+			log.Fatal("Error while trying to grab product items.", err)
+		}
+		products = append(products, Product{name: name, price: price})
+	}
+	fmt.Println(products)
 
-	fmt.Println(html)
 }
