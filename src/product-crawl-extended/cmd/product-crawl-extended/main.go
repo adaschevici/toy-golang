@@ -6,7 +6,7 @@ import (
 	"os"
 	"product-crawl-extended/internal/first_automation"
 	"product-crawl-extended/internal/second_step"
-	//	"product-crawl-extended/internal/third_automation"
+	"product-crawl-extended/internal/third_step"
 )
 
 func setup() {
@@ -60,7 +60,7 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			logger.Info("cmd running extended one automation")
 			logger.Debug("args", args)
-			first_automation.Crawl()
+			third_step.Crawl()
 		},
 	}
 	rootCmd.AddCommand(cmd)
