@@ -3,11 +3,11 @@ package fourth_step
 import (
 	"context"
 	// "fmt"
-	"github.com/chromedp/cdproto/cdp"
+	// "github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/chromedp"
 	"log"
 	"os"
-	"time"
+	// "time"
 )
 
 type Product struct {
@@ -43,19 +43,18 @@ func Crawl() {
 		  }
 		}, 500)
 	       `
-	var productNodes []*cdp.Node
 	var screenshotBuffer []byte
 
 	if err := chromedp.Run(ctx,
 		// visit the target page
 		chromedp.Navigate("https://scrapingclub.com/exercise/list_infinite_scroll/"),
 		chromedp.Evaluate(script, nil),
-		chromedp.Sleep(8*time.Second),
-		// chromedp.WaitVisible(".post:nth-child(60)"),
-		chromedp.FullScreenshot(&screenshotBuffer, 100),
-		chromedp.Screenshot(`.post:nth-child(59)`, &screenshotBuffer, chromedp.NodeVisible),
-		chromedp.Screenshot(`.post`, &screenshotBuffer, chromedp.NodeVisible),
-		chromedp.Nodes(`.post`, &productNodes, chromedp.ByQueryAll),
+		// chromedp.Sleep(8*time.Second),
+		chromedp.WaitVisible(".post:nth-child(60)"),
+		// chromedp.FullScreenshot(&screenshotBuffer, 100),
+		chromedp.Screenshot(`.post:nth-child(29)`, &screenshotBuffer, chromedp.NodeVisible),
+		// chromedp.Screenshot(`.post`, &screenshotBuffer, chromedp.NodeVisible),
+		// chromedp.Nodes(`.post`, &productNodes, chromedp.ByQueryAll),
 	); err != nil {
 		log.Fatal("Error while trying to grab product items.", err)
 	}
