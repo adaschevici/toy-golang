@@ -9,7 +9,8 @@ import (
 	"log"
 	"log/slog"
 	"os"
-	"product-crawl-extended/internal/first_automation"
+	"product-crawl-extended/internal/fifth_step"
+	"product-crawl-extended/internal/first_step"
 	"product-crawl-extended/internal/fourth_step"
 	"product-crawl-extended/internal/second_step"
 	"product-crawl-extended/internal/third_step"
@@ -117,7 +118,7 @@ func main() {
 	}
 	var extent_three = &cobra.Command{
 		Use:   "extend_screenshot",
-		Short: "crawl second stage automation with taking a screenshot",
+		Short: "crawl fourth stage automation with taking a screenshot",
 		Long:  "This is the fourth crawl command and does slightly more automation with taking a screenshot.",
 		Run: func(cmd *cobra.Command, args []string) {
 			logger.Info("cmd running extended third automation")
@@ -125,7 +126,17 @@ func main() {
 			fourth_step.Crawl()
 		},
 	}
+	var extent_four = &cobra.Command{
+		Use:   "extend_form_submission",
+		Short: "crawl fifth stage automation with taking a screenshot",
+		Long:  "This is the fifth crawl command and does slightly more automation with taking a screenshot.",
+		Run: func(cmd *cobra.Command, args []string) {
+			logger.Info("cmd running extended third automation")
+			logger.Debug("Args being passed in are as follows:", "args", args)
+			fifth_step.Crawl()
+		},
+	}
 	rootCmd.AddCommand(cmd)
-	cmd.AddCommand(basic, extent_one, extent_two, extent_three)
+	cmd.AddCommand(basic, extent_one, extent_two, extent_three, extent_four)
 	rootCmd.Execute()
 }
