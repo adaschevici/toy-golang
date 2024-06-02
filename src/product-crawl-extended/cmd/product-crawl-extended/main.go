@@ -1,8 +1,13 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
+	"context"
+	"encoding/json"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"io"
+	"log"
+	"log/slog"
 	"os"
 	"product-crawl-extended/internal/first_automation"
 	"product-crawl-extended/internal/fourth_step"
@@ -10,28 +15,74 @@ import (
 	"product-crawl-extended/internal/third_step"
 )
 
-func setup() {
-	log.SetOutput(os.Stdout)
-	log.SetFormatter(&log.JSONFormatter{})
+type PrettyHandlerOptions struct {
+	SlogOpts slog.HandlerOptions
 }
 
-func setupLogger() *log.Logger {
-	logger := log.New()
-	logger.SetFormatter(&log.TextFormatter{
-		ForceColors: true, // Enable colors in the output
+type PrettyHandler struct {
+	slog.Handler
+	logger *log.Logger
+}
+
+func (h *PrettyHandler) Handle(ctx context.Context, r slog.Record) error {
+	level := r.Level.String() + ":"
+
+	switch r.Level {
+	case slog.LevelDebug:
+		level = color.HiBlueString(level)
+	case slog.LevelInfo:
+		level = color.HiGreenString(level)
+	case slog.LevelWarn:
+		level = color.HiYellowString(level)
+	case slog.LevelError:
+		level = color.HiRedString(level)
+	}
+
+	fields := make(map[string]interface{}, r.NumAttrs())
+	r.Attrs(func(a slog.Attr) bool {
+		fields[a.Key] = a.Value.Any()
+		return true
 	})
-	return logger
+
+	b, err := json.MarshalIndent(fields, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	timeStr := r.Time.Format("[15:05:05.000]")
+	msg := color.CyanString(r.Message)
+
+	h.logger.Println(timeStr, level, msg, color.WhiteString(string(b)))
+	return nil
+}
+
+func NewPrettyHandler(
+	out io.Writer,
+	opts PrettyHandlerOptions,
+) *PrettyHandler {
+	h := &PrettyHandler{
+		Handler: slog.NewJSONHandler(out, &opts.SlogOpts),
+		logger:  log.New(out, "", 0),
+	}
+
+	return h
 }
 
 func main() {
 	var rootCmd = &cobra.Command{Use: "spider"}
-	logger := setupLogger()
+	opts := PrettyHandlerOptions{
+		SlogOpts: slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		},
+	}
+	handler := NewPrettyHandler(os.Stdout, opts)
+	logger := slog.New(handler)
 	var cmd = &cobra.Command{
 		Use:   "crawl",
 		Short: "crawl basic set automation1",
 		Long:  "This is the first crawl command and does very basic set automation.",
 		Run: func(cmd *cobra.Command, args []string) {
-			logger.Debug("args", args)
+			logger.Debug("Args being passed in are as follows:", "args", args)
 		},
 	}
 	var basic = &cobra.Command{
@@ -40,7 +91,7 @@ func main() {
 		Long:  "This is the first crawl command and does basic set automation.",
 		Run: func(cmd *cobra.Command, args []string) {
 			logger.Info("cmd running basic automation")
-			logger.Debug("args", args)
+			logger.Debug("Args being passed in are as follows:", "args", args)
 			first_automation.Crawl()
 		},
 	}
@@ -50,7 +101,7 @@ func main() {
 		Long:  "This is the second crawl command and does slightly more automation.",
 		Run: func(cmd *cobra.Command, args []string) {
 			logger.Info("cmd running extended first automation")
-			logger.Debug("args", args)
+			logger.Debug("Args being passed in are as follows:", "args", args)
 			second_step.Crawl()
 		},
 	}
@@ -60,7 +111,7 @@ func main() {
 		Long:  "This is the third crawl command and does slightly more automation with events included.",
 		Run: func(cmd *cobra.Command, args []string) {
 			logger.Info("cmd running extended second automation")
-			logger.Debug("args", args)
+			logger.Debug("Args being passed in are as follows:", "args", args)
 			third_step.Crawl()
 		},
 	}
@@ -70,7 +121,7 @@ func main() {
 		Long:  "This is the fourth crawl command and does slightly more automation with taking a screenshot.",
 		Run: func(cmd *cobra.Command, args []string) {
 			logger.Info("cmd running extended third automation")
-			logger.Debug("args", args)
+			logger.Debug("Args being passed in are as follows:", "args", args)
 			fourth_step.Crawl()
 		},
 	}
