@@ -93,7 +93,7 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			logger.Info("cmd running basic automation")
 			logger.Debug("Args being passed in are as follows:", "args", args)
-			first_automation.Crawl()
+			first_step.Crawl()
 		},
 	}
 	var extent_one = &cobra.Command{
@@ -101,7 +101,7 @@ func main() {
 		Short: "crawl second stage automation",
 		Long:  "This is the second crawl command and does slightly more automation.",
 		Run: func(cmd *cobra.Command, args []string) {
-			logger.Info("cmd running extended first automation")
+			logger.Info("cmd running extended second automation")
 			logger.Debug("Args being passed in are as follows:", "args", args)
 			second_step.Crawl()
 		},
@@ -121,7 +121,7 @@ func main() {
 		Short: "crawl fourth stage automation with taking a screenshot",
 		Long:  "This is the fourth crawl command and does slightly more automation with taking a screenshot.",
 		Run: func(cmd *cobra.Command, args []string) {
-			logger.Info("cmd running extended third automation")
+			logger.Info("cmd running extended fourth automation")
 			logger.Debug("Args being passed in are as follows:", "args", args)
 			fourth_step.Crawl()
 		},
@@ -129,14 +129,18 @@ func main() {
 	var extent_four = &cobra.Command{
 		Use:   "extend_form_submission",
 		Short: "crawl fifth stage automation with taking a screenshot",
-		Long:  "This is the fifth crawl command and does slightly more automation with taking a screenshot.",
+		Long:  "This is the fifth crawl command and does slightly more automation by also sending some key events.",
 		Run: func(cmd *cobra.Command, args []string) {
-			logger.Info("cmd running extended third automation")
+			logger.Info("cmd running extended fifth automation")
+			logger.Debug("Args being passed in are as follows:", "args", args)
+			fifth_step.Crawl()
+		},
+	}
 			logger.Debug("Args being passed in are as follows:", "args", args)
 			fifth_step.Crawl()
 		},
 	}
 	rootCmd.AddCommand(cmd)
-	cmd.AddCommand(basic, extent_one, extent_two, extent_three, extent_four)
+	cmd.AddCommand(basic, extent_one, extent_two, extent_three, extent_four, extent_five)
 	rootCmd.Execute()
 }
