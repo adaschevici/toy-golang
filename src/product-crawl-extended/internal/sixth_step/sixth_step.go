@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
@@ -24,8 +25,8 @@ func Crawl() {
 	var requestID network.RequestID
 	var urlstr string
 	if err := chromedp.Run(ctx,
-		chromedp.Navigate("http://localhost:5000/download"),
-		chromedp.Evaluate(`document.querySelector('button#download > a').getAttribute('href')`, &urlstr),
+		chromedp.Navigate("https://artur.wtf/blog/2024-28-05-why-you-need-boring-estimates/"),
+		chromedp.Evaluate(`document.querySelector('div.main-page-content div > img').getAttribute('src')`, &urlstr),
 	); err != nil {
 		log.Fatal("Error while trying to grab product items.", err)
 	}
@@ -34,7 +35,7 @@ func Crawl() {
 		switch ev := ev.(type) {
 		case *network.EventRequestWillBeSent:
 			log.Printf("EventRequestWillBeSent: %v: %v", ev.RequestID, ev.Request.URL)
-			if ev.Request.URL == fmt.Sprintf("http://localhost:5000%s", urlstr) {
+			if ev.Request.URL == fmt.Sprintf("https://artur.wtf/blog/2024-28-05-why-you-need-boring-estimates/%s", urlstr) {
 				log.Printf("Initializing requestID: %v: %v", ev.RequestID, ev.Request.URL)
 				requestID = ev.RequestID
 			}
@@ -42,15 +43,31 @@ func Crawl() {
 			log.Printf("EventLoadingFinished: %v", ev.RequestID)
 			if ev.RequestID == requestID {
 				log.Printf("EventLoadingFinished: %v matched %v", requestID, ev.RequestID)
-				done <- true
+				close(done)
 			}
 		}
 	})
 	if err := chromedp.Run(ctx,
-		chromedp.Click(`button#download`),
+		// chromedp.Click(`button#download`),
+		chromedp.Navigate(fmt.Sprintf("https://artur.wtf/blog/2024-28-05-why-you-need-boring-estimates/%s", urlstr)),
 	); err != nil {
 		log.Fatal("Error while trying to grab product items.", err)
 	}
+
 	<-done
-	fmt.Println("This is the sixth step.")
+
+	var imageBuffer []byte
+	if err := chromedp.Run(ctx,
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			var err error
+			imageBuffer, err = network.GetResponseBody(requestID).Do(ctx)
+			return err
+		}),
+	); err != nil {
+		log.Fatal("Error while trying to grab product items.", err)
+	}
+
+	if err := os.WriteFile("download.png", imageBuffer, 0644); err != nil {
+		log.Fatal("Error while trying to grab product items.", err)
+	}
 }
