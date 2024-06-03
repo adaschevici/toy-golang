@@ -13,6 +13,7 @@ import (
 	"product-crawl-extended/internal/first_step"
 	"product-crawl-extended/internal/fourth_step"
 	"product-crawl-extended/internal/second_step"
+	"product-crawl-extended/internal/sixth_step"
 	"product-crawl-extended/internal/third_step"
 )
 
@@ -136,8 +137,14 @@ func main() {
 			fifth_step.Crawl()
 		},
 	}
+	var extent_five = &cobra.Command{
+		Use:   "extend_file_download",
+		Short: "crawl sixth stage automation with taking a screenshot",
+		Long:  "This is the sixth crawl command and does slightly more automation by also downloading a file.",
+		Run: func(cmd *cobra.Command, args []string) {
+			logger.Info("cmd running extended sixth automation")
 			logger.Debug("Args being passed in are as follows:", "args", args)
-			fifth_step.Crawl()
+			sixth_step.Crawl()
 		},
 	}
 	rootCmd.AddCommand(cmd)
