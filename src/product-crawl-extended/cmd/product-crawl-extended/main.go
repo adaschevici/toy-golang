@@ -13,6 +13,7 @@ import (
 	"product-crawl-extended/internal/fifth_step"
 	"product-crawl-extended/internal/first_step"
 	"product-crawl-extended/internal/fourth_step"
+	"product-crawl-extended/internal/ninth_step"
 	"product-crawl-extended/internal/second_step"
 	"product-crawl-extended/internal/seventh_step"
 	"product-crawl-extended/internal/sixth_step"
@@ -171,9 +172,18 @@ func main() {
 		},
 	}
 
+	var extent_eight = &cobra.Command{
+		Use:   "extend_blocked",
+		Short: "crawl ninth stage but this will be blocked, so we need to figure it out",
+		Long:  "This is the ninth crawl command that will get blocked but we should trick it.",
+		Run: func(cmd *cobra.Command, args []string) {
+			logger.Debug("Args being passed in are as follows:", "args", args)
+			ninth_step.Crawl()
+		},
+	}
 	rootCmd.AddCommand(cmd)
 	cmd.AddCommand(
 		basic, extent_one, extent_two, extent_three,
-		extent_four, extent_five, extent_six, extent_seven)
+		extent_four, extent_five, extent_six, extent_seven, extent_eight)
 	rootCmd.Execute()
 }
