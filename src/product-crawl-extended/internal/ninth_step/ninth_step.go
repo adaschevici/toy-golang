@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	// "time"
+	"time"
 
 	// "github.com/chromedp/cdproto/dom"
 	"github.com/chromedp/chromedp"
@@ -24,15 +24,37 @@ func Crawl() {
 	// to release the browser resources when
 	// it is no longer needed
 	defer cancel()
-	var injectedScript = `(function() {
-		let iframe = document.querySelector('div.challenge-stage iframe');
-		console.log('iframe: ', iframe);
-		return iframe;
-	})();`
+	var injectedScript = `
+		(async function() {
+	            function waitForIframeLoad(iframe) {
+	              return new Promise(function(resolve, reject) {
+	                iframe.onload = function() {
+	                  resolve(iframe.contentDocument || iframe.contentWindow.document);
+	                };
+	                iframe.onerror = function(err) {
+	                  reject(new Error("Failed to load iframe"));
+	                };
+	              });
+	            }
+		    try {
+			let iframe = document.querySelector('div#turnstile-wrapper iframe');
+			const iframeDoc = await waitForIframeLoad(iframe);
+
+			// Example: Accessing an element inside the iframe
+			const elementInsideIframe = iframeDoc.querySelector('div#challenge-stage label.cb-lb input[type="checkbox"]');
+			console.log('Element inside iframe:', elementInsideIframe);
+
+		    } catch (error) {
+			console.error('Error:', error);
+		    }
+		})();
+	`
 	var html string
 	if err := chromedp.Run(ctx,
 		chromedp.Navigate("https://www.g2.com/products/jira/reviews/"),
-		chromedp.Evaluate(injectedScript, &html),
+		chromedp.WaitVisible(`div#turnstile-wrapper iframe`),
+		chromedp.Evaluate(injectedScript, nil),
+		chromedp.Sleep(60*time.Second),
 		// chromedp.Sleep(60*time.Second),
 		// we have an iframe, so we need to switch to it before we can interact with it
 		// chromedp.WaitVisible(`label.cb-lb > input`),
