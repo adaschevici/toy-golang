@@ -9,12 +9,14 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"product-crawl-extended/internal/eighth_step"
 	"product-crawl-extended/internal/fifth_step"
 	"product-crawl-extended/internal/first_step"
 	"product-crawl-extended/internal/fourth_step"
 	"product-crawl-extended/internal/second_step"
 	"product-crawl-extended/internal/seventh_step"
 	"product-crawl-extended/internal/sixth_step"
+
 	"product-crawl-extended/internal/third_step"
 )
 
@@ -158,7 +160,20 @@ func main() {
 			seventh_step.Crawl()
 		},
 	}
+	var extent_seven = &cobra.Command{
+		Use:   "extend_set_proxy",
+		Short: "crawl eighth stage automation with setting up a proxy and custom User-Agent",
+		Long:  "This is the eighth crawl command that sets a proxy and custom User-Agent for the browser.",
+		Run: func(cmd *cobra.Command, args []string) {
+			logger.Info("cmd running extended sixth automation")
+			logger.Debug("Args being passed in are as follows:", "args", args)
+			eighth_step.Crawl()
+		},
+	}
+
 	rootCmd.AddCommand(cmd)
-	cmd.AddCommand(basic, extent_one, extent_two, extent_three, extent_four, extent_five, extent_six)
+	cmd.AddCommand(
+		basic, extent_one, extent_two, extent_three,
+		extent_four, extent_five, extent_six, extent_seven)
 	rootCmd.Execute()
 }
